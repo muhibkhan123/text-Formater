@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "symbol": "◆",
+    "flower": "🌸",
+    "enabled": true
+  },
+  {
+    "id": 3,
+    "symbol": "•",
+    "flower": "🌹",
+    "enabled": true
+  },
+  {
+    "id": 1759301519169,
+    "symbol": "⟫",
+    "flower": "🥀",
+    "enabled": true
+  },
+  {
+    "id": 1759301537896,
+    "symbol": "⟪",
+    "flower": "💐",
+    "enabled": true
+  }
+]

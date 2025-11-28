@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Advanced LinkedIn Text Formatter</title>
+    <meta
+        content="A powerful tool to format LinkedIn posts with a full draft management system, auto-saving, undo/redo, emoji picker, and advanced analytics."
+        name="description" />
+    <meta
+        content="linkedin formatter, text formatter, draft management, auto-save, linkedin post editor, Yasin Ullah, Pakistan"
+        name="keywords" />
+    <meta content="Yasin Ullah, Pakistan" name="author" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Nastaliq+Urdu:wght@400;700&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/compromise@14.13.0/builds/compromise.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.10/vfs_fonts.js"></script>
+    <style>
+        :root {
+            --font-primary: Calibri, 'Inter', sans-serif;
+            --font-urdu: Calibri, 'Noto Nastaliq Urdu', serif;
+        }
+
+        body {
+            font-family: var(--font-primary);
+        }
+
+        .preview-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        html.dark ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+
+        html.dark ::-webkit-scrollbar-thumb {
+            background: #718096;
+        }
+
+        html.dark ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        textarea {
+            font-family: var(--font-primary), var(--font-urdu);
+        }
+
+        .btn-social {
+            @apply inline-flex items-center justify-center text-2xl p-3 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200;
+        }
+
+        .copied {
+            @apply bg-green-500 text-white hover:bg-green-600;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="manifest.json" rel="manifest" />
+    <link href="favicon.ico" rel="icon" type="image/x-icon" />
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <div class="container mx-auto p-4 lg:p-6">
+        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <h1 class="hidden lg:block text-3xl font-bold text-blue-600 dark:text-blue-500">Advanced LinkedIn Formatter
+            </h1>
+            <div class="flex items-center gap-4">
+                <button
+                    class="text-2xl p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    id="settings-btn" title="Settings">
+                    <i class="bi bi-gear-fill"></i>
+                </button>
+                <button
+                    class="text-2xl p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    id="replacements-btn" title="Replacements">
+                    <i class="bi bi-arrow-left-right"></i>
+                </button>
+                <button
+                    class="text-2xl p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    id="theme-toggle">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+            </div>
+        </header>
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col">
+                <h2 class="text-xl font-semibold mb-4">Input</h2>
+                <div class="toolbar flex flex-wrap items-center gap-2 mb-4 border-b dark:border-gray-700 pb-4">
+                    <button class="btn-tool" data-format="bold" title="Bold (Ctrl+B)"><i
+                            class="bi bi-type-bold"></i></button>
+                    <button class="btn-tool" data-format="italic" title="Italic (Ctrl+I)"><i
+                            class="bi bi-type-italic"></i></button>
+                    <button class="btn-tool" data-format="strikethrough" title="Strikethrough"><i
+                            class="bi bi-type-strikethrough"></i></button>
+                    <button class="btn-tool" data-format="bullet" title="Bullet List"><i
+                            class="bi bi-list-ul"></i></button>
+                    <button class="btn-tool" data-format="number" title="Numbered List"><i
+                            class="bi bi-list-ol"></i></button>
+                    <button class="btn-tool" id="emoji-picker-btn" title="Insert Emoji"><i
+                            class="bi bi-emoji-smile"></i></button>
+                    <div class="border-l dark:border-gray-600 pl-2 ml-2">
+                        <button class="btn-tool" id="undo-btn" title="Undo (Ctrl+Z)"><i
+                                class="bi bi-arrow-counterclockwise"></i></button>
+                        <button class="btn-tool" id="redo-btn" title="Redo (Ctrl+Y)"><i
+                                class="bi bi-arrow-clockwise"></i></button>
+                    </div>
+                </div>
+                <textarea
+                    class="w-full flex-grow bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none"
+                    dir="auto" id="input-text" placeholder="Start writing your powerful LinkedIn post..."></textarea>
+                <div
+                    class="flex flex-wrap justify-between items-center text-sm mt-3 text-gray-500 dark:text-gray-400 gap-2">
+                    <div>
+                        <span id="char-count">Chars: 0</span> |
+                        <span id="word-count">Words: 0</span> |
+                        <span id="hashtag-count">Hashtags: 0</span> |
+                        <span id="readability-score">Readability: N/A</span>
+                    </div>
+                    <span class="text-xs italic" id="autosave-status"></span>
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-semibold mb-2">Hashtag Suggestions:</h4>
+                    <div class="flex flex-wrap gap-2" id="hashtag-suggestions">
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col">
+                <h2 class="text-xl font-semibold mb-4">Preview &amp; Actions</h2>
+                <div class="preview-content w-full flex-grow bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 overflow-y-auto relative"
+                    dir="auto" id="output-preview">
+                </div>
+                <div class="text-xs italic text-gray-500 dark:text-gray-400 mt-2">
+                    <span class="hidden" id="read-more-hint">LinkedIn typically truncates posts after ~3 lines or
+                        200-250 characters. Consider adding a "Read More" or "..." here.</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+                    <button class="btn btn-primary" id="copy-btn"><i class="bi bi-clipboard-check"></i> Copy
+                        Result
+                    </button>
+                    <button class="btn btn-danger" id="clear-btn"><i class="bi bi-trash"></i> Clear Text</button>
+                    <div class="col-span-2 sm:col-span-3 grid grid-cols-7 gap-3" id="social-share-container">
+                        <button class="btn-social" data-limit="2990" title="Copy for LinkedIn"><i
+                                class="bi bi-linkedin"></i></button>
+                        <button class="btn-social" data-limit="280" title="Copy for X (Twitter)"><i
+                                class="bi bi-twitter-x"></i></button>
+                        <button class="btn-social" data-limit="63200" title="Copy for Facebook"><i
+                                class="bi bi-facebook"></i></button>
+                        <button class="btn-social" data-limit="2200" title="Copy for Instagram"><i
+                                class="bi bi-instagram"></i></button>
+                        <button class="btn-social" data-limit="500" title="Copy for Threads"><i
+                                class="bi bi-threads"></i></button>
+                        <button class="btn-social" data-limit="696" title="Copy for WhatsApp"><i
+                                class="bi bi-whatsapp"></i></button>
+                        <button class="btn-social" data-limit="4096" title="Copy for Telegram"><i
+                                class="bi bi-telegram"></i></button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mt-6">
+            <h3 class="text-xl font-semibold mb-4">Content Management</h3>
+            <div class="flex flex-wrap gap-3">
+                <button class="btn btn-primary" id="save-draft-btn"><i class="bi bi-save"></i> Save New Draft</button>
+                <button class="btn btn-primary hidden" id="update-draft-btn"><i class="bi bi-arrow-repeat"></i> Update
+                    Draft</button>
+                <button class="btn btn-secondary" id="draft-manager-btn"><i class="bi bi-collection"></i> Manage
+                    Drafts
+                </button>
+                <button class="btn btn-secondary" id="backup-btn"><i class="bi bi-cloud-download"></i> Backup
+                    All
+                </button>
+                <button class="btn btn-secondary" id="restore-btn"><i class="bi bi-cloud-upload"></i> Restore</button>
+                <input accept=".json" class="hidden" id="restore-file" type="file" />
+                <div class="relative">
+                    <button class="btn btn-secondary" id="template-dropdown-btn"><i class="bi bi-lightbulb"></i>
+                        Templates
+                        <i class="bi bi-chevron-down ml-2"></i></button>
+                    <div class="hidden absolute bottom-full mb-2 w-48 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md shadow-lg z-10"
+                        id="template-options">
+                        <div id="default-templates"></div>
+                        <a class="export-option border-t dark:border-gray-600 mt-1 pt-1" href="#"
+                            id="create-template-btn"><i class="bi bi-plus-circle"></i> Create New Template</a>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()"><i
+                        class="bi bi-upload"></i> Import .txt</button>
+                <input accept=".txt" class="hidden" id="import-file" type="file" />
+                <div class="relative">
+                    <button class="btn btn-secondary" id="export-dropdown-btn"><i class="bi bi-download"></i> Export As
+                        <i class="bi bi-chevron-down ml-2"></i></button>
+                    <div class="hidden absolute bottom-full mb-2 w-full bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md shadow-lg z-10"
+                        id="export-options">
+                        <a class="export-option" href="#" id="export-txt-btn">Text (.txt)</a>
+                        <a class="export-option" href="#" id="export-md-btn">Markdown (.md)</a>
+                        <a class="export-option" href="#" id="export-png-btn">Image (.png)</a>
+                        <a class="export-option" href="#" id="export-pdf-all-btn">All Drafts (.pdf)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 px-4"
+        id="replacements-modal">
+        <div class="bg-white dark:bg-gray-800 shadow-2xl w-full max-w-2xl h-full flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-2xl font-semibold">Custom Replacements</h3>
+                    <button class="btn-tool" id="backup-replacements-btn" title="Backup Rules"><i
+                            class="bi bi-cloud-download"></i></button>
+                    <button class="btn-tool" id="restore-replacements-btn" title="Restore Rules"><i
+                            class="bi bi-cloud-upload"></i></button>
+                    <input accept=".json" class="hidden" id="restore-replacements-file" type="file" />
+                </div>
+                <button class="modal-close-btn">×</button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-grow" id="replacements-list">
+            </div>
+            <div class="p-6 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                <h4 class="text-lg font-semibold mb-3" id="replacement-form-title">Add New Replacement</h4>
+                <form class="space-y-4" id="replacement-form">
+                    <input id="replacement-id" type="hidden" />
+                    <div>
+                        <label class="block text-sm font-medium mb-1" for="find-regex">Find (Case-sensitive
+                            Regex):</label>
+                        <input
+                            class="w-full p-2 font-mono rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600"
+                            id="find-regex" placeholder="e.g., CompanyName" type="text" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" for="replace-with">Replace With:</label>
+                        <input
+                            class="w-full p-2 font-mono rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600"
+                            id="replace-with" placeholder="e.g., Another Name" type="text" />
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button class="btn btn-secondary" id="cancel-edit-btn" style="display:none;"
+                            type="button">Cancel</button>
+                        <button class="btn btn-primary" type="submit">Save Rule</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4"
+        id="draft-manager-modal">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+                <h3 class="text-2xl font-semibold">Draft Manager</h3>
+                <button class="modal-close-btn">×</button>
+            </div>
+            <div class="p-4 border-b dark:border-gray-700 flex flex-wrap gap-2">
+                <input class="flex-grow p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600"
+                    id="draft-search" placeholder="Search drafts..." type="text" />
+                <select class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600"
+                    id="draft-filter-tag">
+                    <option value="">All Categories</option>
+                </select>
+                <button class="btn btn-secondary" id="export-selected-drafts-btn"><i class="bi bi-box-arrow-up"></i>
+                </button>
+                <button class="block px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                    id="export-selected-txt">
+                    <i class="bi bi-file-earmark-text"></i>
+                </button>
+                <button class="block px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                    id="export-selected-jpg">
+                    <i class="bi bi-file-earmark-image"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-grow" id="drafts-list">
+            </div>
+            <div class="p-4 border-t dark:border-gray-700 flex justify-between items-center">
+                <label class="flex items-center gap-2 text-sm">
+                    <input id="select-all-drafts" type="checkbox" /> Select All
+                </label>
+                <button class="btn btn-danger" id="bulk-delete-drafts-btn"><i class="bi bi-trash"></i> Delete
+                    Selected</button>
+            </div>
+        </div>
+    </div>
+    <div class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4"
+        id="emoji-picker-modal">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[70vh] flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+                <h3 class="text-2xl font-semibold">Select Emoji</h3>
+                <button class="modal-close-btn">×</button>
+            </div>
+            <div class="p-5 grid grid-cols-8 gap-2 overflow-y-auto" id="emoji-grid">
+            </div>
+        </div>
+    </div>
+    <div class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4" id="settings-modal">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[70vh] flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+                <h3 class="text-2xl font-semibold">Settings</h3>
+                <button class="modal-close-btn">×</button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2" for="autosave-frequency">Autosave Frequency
+                        (seconds):</label>
+                    <input class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600"
+                        id="autosave-frequency" min="5" type="number" value="10" />
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2" for="read-more-threshold">"Read More" Character
+                        Threshold:</label>
+                    <input class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600"
+                        id="read-more-threshold" min="50" type="number" value="250" />
+                </div>
+                <div class="flex justify-end">
+                    <button class="btn btn-primary" id="save-settings-btn">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4"
+        id="create-template-modal">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+                <h3 class="text-2xl font-semibold" id="template-modal-title">Create New Template</h3>
+                <button class="modal-close-btn">×</button>
+            </div>
+            <div class="p-6 flex-grow flex flex-col">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2" for="template-name">Template Name:</label>
+                    <input class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600"
+                        id="template-name" placeholder="e.g., Project Update, Hiring Post" type="text" />
+                </div>
+                <div class="mb-4 flex-grow">
+                    <label class="block text-sm font-medium mb-2" for="template-content">Template Content:</label>
+                    <textarea
+                        class="w-full h-48 p-2 rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600 resize-none"
+                        id="template-content" placeholder="Enter your template content here..."></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button class="btn btn-secondary" id="delete-template-btn" style="display:none;"><i
+                            class="bi bi-trash"></i> Delete</button>
+                    <button class="btn btn-primary" id="save-template-btn">Save Template</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#0a66c2',
+                        'secondary': '#6c757d',
+                        'danger': '#dc3545',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .btn {
+            @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold transition-transform duration-200 hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800;
+        }
+
+        .btn-primary {
+            @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+        }
+
+        .btn-secondary {
+            @apply bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-400;
+        }
+
+        .btn-danger {
+            @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+        }
+
+        .btn-tool {
+            @apply p-2 rounded-md bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500;
+        }
+
+        .modal-close-btn {
+            @apply text-3xl font-bold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition;
+        }
+
+        .export-option {
+            @apply block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left;
+        }
+
+        textarea#input-text,
+        #output-preview {
+            font-family: var(--font-primary), var(--font-urdu);
+        }
+    </style>
+    <script>
+        const replacementsBtn = document.getElementById('replacements-btn');
+        const replacementsModal = document.getElementById('replacements-modal');
+        const replacementsListContainer = document.getElementById('replacements-list');
+        const replacementForm = document.getElementById('replacement-form');
+        const findRegexInput = document.getElementById('find-regex');
+        const replaceWithInput = document.getElementById('replace-with');
+        const replacementIdInput = document.getElementById('replacement-id');
+        const replacementFormTitle = document.getElementById('replacement-form-title');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        let isSyncing = false;
+        let replacements = JSON.parse(localStorage.getItem('linkedinFormatterReplacements')) || [];
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputText = document.getElementById('input-text');
+            const outputPreview = document.getElementById('output-preview');
+            const copyBtn = document.getElementById('copy-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const charCountEl = document.getElementById('char-count');
+            const wordCountEl = document.getElementById('word-count');
+            const hashtagCountEl = document.getElementById('hashtag-count');
+            const readabilityScoreEl = document.getElementById('readability-score');
+            const themeToggle = document.getElementById('theme-toggle');
+            const saveDraftBtn = document.getElementById('save-draft-btn');
+            const updateDraftBtn = document.getElementById('update-draft-btn');
+            const draftManagerBtn = document.getElementById('draft-manager-btn');
+            const draftManagerModal = document.getElementById('draft-manager-modal');
+            const draftsListContainer = document.getElementById('drafts-list');
+            const importFile = document.getElementById('import-file');
+            const templateDropdownBtn = document.getElementById('template-dropdown-btn');
+            const templateOptions = document.getElementById('template-options');
+            const defaultTemplatesContainer = document.getElementById('default-templates');
+            const createTemplateBtn = document.getElementById('create-template-btn');
+            const createTemplateModal = document.getElementById('create-template-modal');
+            const templateNameInput = document.getElementById('template-name');
+            const templateContentInput = document.getElementById('template-content');
+            const saveTemplateBtn = document.getElementById('save-template-btn');
+            const deleteTemplateBtn = document.getElementById('delete-template-btn');
+            const templateModalTitle = document.getElementById('template-modal-title');
+            const shareLinkedInBtn = document.getElementById('share-linkedin-btn');
+            const undoBtn = document.getElementById('undo-btn');
+            const redoBtn = document.getElementById('redo-btn');
+            const autosaveStatus = document.getElementById('autosave-status');
+            const emojiPickerBtn = document.getElementById('emoji-picker-btn');
+            const emojiPickerModal = document.getElementById('emoji-picker-modal');
+            const emojiGrid = document.getElementById('emoji-grid');
+            const exportDropdownBtn = document.getElementById('export-dropdown-btn');
+            const exportOptions = document.getElementById('export-options');
+            const readMoreHint = document.getElementById('read-more-hint');
+            const hashtagSuggestionsContainer = document.getElementById('hashtag-suggestions');
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const autosaveFrequencyInput = document.getElementById('autosave-frequency');
+            const readMoreThresholdInput = document.getElementById('read-more-threshold');
+            const saveSettingsBtn = document.getElementById('save-settings-btn');
+            const draftSearch = document.getElementById('draft-search');
+            const draftFilterTag = document.getElementById('draft-filter-tag');
+            const selectAllDraftsCheckbox = document.getElementById('select-all-drafts');
+            const bulkDeleteDraftsBtn = document.getElementById('bulk-delete-drafts-btn');
+            const exportPdfAllBtn = document.getElementById('export-pdf-all-btn');
+            const exportSelectedDraftsBtn = document.getElementById('export-selected-drafts-btn');
+            let drafts = JSON.parse(localStorage.getItem('linkedinFormatterDrafts')) || [];
+            let customTemplates = JSON.parse(localStorage.getItem('linkedinFormatterCustomTemplates')) || [];
+            let history = [''];
+            let historyIndex = 0;
+            let autosaveTimeout;
+            let loadedDraftId = null;
+            let userSettings = JSON.parse(localStorage.getItem('linkedinFormatterSettings')) || {
+                autosaveFrequency: 10,
+                readMoreThreshold: 250
+            };
+            const defaultTemplates = [
+                { name: "Project Update", content: `🚀 Project Update: [Project Name] 🚀\n\nThrilled to share our latest progress!\n\n✅ Milestone 1: Completed\n✅ Milestone 2: In Progress\n\nBig thanks to the team for their hard work. More to come!\n\n#[ProjectName] #[Update] #[Teamwork]` },
+                { name: "Hiring Announcement", content: `🌟 We're Hiring! 🌟\n\nOur team is growing and we're looking for a talented [Job Title] to join us.\n\nIf you're passionate about [Industry/Skill] and want to make an impact, we'd love to hear from you.\n\nApply here: [Link]\n\n#[Hiring] #[JobOpening] #[Career]#[YourCompany]` },
+                { name: "Sharing an Article", content: `Found this insightful article on [Topic].\n\nKey takeaway for me was: "[Quote or Insight]"\n\nHighly recommend a read!\n\n[Article Link]\n\n#[Reading] #[Learning] #[Topic]` },
+                { name: "Eid Mubarak Post", content: `🌙 Eid Mubarak to everyone celebrating! May this blessed occasion bring joy, peace, and prosperity to you and your loved ones. Wishing you a wonderful time filled with happiness and togetherness.\n\n#EidMubarak #EidAlAdha #Celebration #Joy #Pakistan` },
+                { name: "Pakistani Tech Industry Insight", content: `💡 Fascinating insights into Pakistan's growing tech industry! The innovation and talent emerging from our region are truly remarkable. Excited to see what the future holds.\n\nRead more: [Article Link]\n\n#PakistanTech #Innovation #Startups #DigitalPakistan #TechIndustry` }
+            ];
+            const emojis = ['🚀', '💡', '🔥', '✅', '🌟', '📈', '🤝', '🎯', '🎉', '💪', '🧠', '💼', '🔗', '💬', '👇', '➡️', '🌍', '💻', '👨‍💻', '👩‍💻', '🤔', '🙌', '💯', '😊', '🇵🇰', '🌙', '✨', '🤩', '🌸', '🌳', '🕊️', '❤️', '👍', '🙏', '🤲'];
+            function toBold(str) {
+                return str.split('').map(char => ({
+                    'A': '𝗔', 'B': '𝗕', 'C': '𝗖', 'D': '𝗗', 'E': '𝗘', 'F': '𝗙', 'G': '𝗚', 'H': '𝗛', 'I': '𝗜', 'J': '𝗝', 'K': '𝗞', 'L': '𝗟', 'M': '𝗠', 'N': '𝗡', 'O': '𝗢', 'P': '𝗣', 'Q': '𝗤', 'R': '𝗥', 'S': '𝗦', 'T': '𝗧', 'U': '𝗨', 'V': '𝗩', 'W': '𝗪', 'X': '𝗫', 'Y': '𝗬', 'Z': '𝗭',
+                    'a': '𝗮', 'b': '𝗯', 'c': '𝗰', 'd': '𝗱', 'e': '𝗲', 'f': '𝗳', 'g': '𝗴', 'h': '𝗵', 'i': '𝗶', 'j': '𝗷', 'k': '𝗸', 'l': '𝗹', 'm': '𝗺', 'n': '𝗻', 'o': '𝗼', 'p': '𝗽', 'q': '𝗾', 'r': '𝗿', 's': '𝘀', 't': '𝘁', 'u': '𝘂', 'v': '𝘃', 'w': '𝘄', 'x': '𝘅', 'y': '𝘆', 'z': '𝘇',
+                    '0': '𝟬', '1': '𝟭', '2': '𝟮', '3': '𝟯', '4': '𝟰', '5': '𝟱', '6': '𝟲', '7': '𝟳', '8': '𝟴', '9': '𝟵'
+                }[char] || char)).join('');
+            }
+            function toItalic(str) {
+                return str.split('').map(char => ({
+                    'A': '𝘈', 'B': '𝘉', 'C': '𝘊', 'D': '𝘋', 'E': '𝘌', 'F': '𝘍', 'G': '𝘎', 'H': '𝘏', 'I': '𝘐', 'J': '𝘑', 'K': '𝘒', 'L': '𝘓', 'M': '𝘔', 'N': '𝘕', 'O': '𝘖', 'P': '𝘗', 'Q': '𝘘', 'R': '𝘙', 'S': '𝘚', 'T': '𝘛', 'U': '𝘜', 'V': '𝘝', 'W': '𝘞', 'X': '𝘟', 'Y': '𝘠', 'Z': '𝘡',
+                    'a': '𝘢', 'b': '𝘣', 'c': '𝘤', 'd': '𝘥', 'e': '𝘦', 'f': '𝘧', 'g': '𝘨', 'h': '𝘩', 'i': '𝘪', 'j': '𝘫', 'k': '𝘬', 'l': '𝘭', 'm': '𝘮', 'n': '𝘯', 'o': '𝘰', 'p': '𝘱', 'q': '𝘲', 'r': '𝘳', 's': '𝘴', 't': '𝘵', 'u': '𝘶', 'v': '𝘷', 'w': '𝘸', 'x': '𝘹', 'y': '𝘺', 'z': '𝘻'
+                }[char] || char)).join('');
+            }
+            function toStrikethrough(str) {
+                return str.split('').map(char => char + '\u0336').join('');
+            }
+            function calculateFleschReadingEase(text) {
+                const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+                const numSentences = sentences.length;
+                if (numSentences === 0) return 0;
+                const words = text.split(/\s+/).filter(w => w.trim().length > 0);
+                const numWords = words.length;
+                if (numWords === 0) return 0;
+                let numSyllables = 0;
+                const syllableRegex = /[aeiouyAEIOUY]{1,2}/g;
+                words.forEach(word => {
+                    const matches = word.match(syllableRegex);
+                    numSyllables += matches ? matches.length : 1;
+                });
+                const ASL = numWords / numSentences;
+                const ASW = numSyllables / numWords;
+                const score = 206.835 - (1.015 * ASL) - (84.6 * ASW);
+                return Math.max(0, Math.min(100, score.toFixed(1)));
+            }
+            function getReadabilityDescription(score) {
+                if (score >= 90) return "Very Easy (5th grade)";
+                if (score >= 80) return "Easy (6th grade)";
+                if (score >= 70) return "Fairly Easy (7th grade)";
+                if (score >= 60) return "Standard (8th-9th grade)";
+                if (score >= 50) return "Fairly Difficult (10th-12th grade)";
+                if (score >= 30) return "Difficult (College)";
+                return "Very Difficult (Graduate)";
+            }
+            window.formatText = function (text) {
+                const processParagraphInlineStyles = (line) => {
+                    const hashtags = [];
+                    let protectedLine = line.replace(/#[\p{L}\p{N}_]+(\s[\p{L}\p{N}_]+)*/gu, (match) => {
+                        hashtags.push(match);
+                        return `§¬{${hashtags.length - 1}}¬§`;
+                    });
+                    let processed = protectedLine;
+                    processed = processed.replace(/~~(.*?)~~/g, (m, p1) => toStrikethrough(p1));
+                    processed = processed.replace(/\*\*(.*?)\*\*/g, (match, content) => {
+                        if (!content.trim()) return '';
+                        const converted = toBold(content);
+                        return converted === content ? `◆ ${content} ◆` : converted;
+                    });
+                    processed = processed.replace(/_([^_]+)_|\*([^*]+)\*/g, (match, p1, p2) => {
+                        const content = p1 || p2;
+                        if (!content.trim()) return '';
+                        const converted = toItalic(content);
+                        return converted === content ? `✧ ${content} ✧` : converted;
+                    });
+                    if (hashtags.length > 0) {
+                        processed = processed.replace(/§¬\{(\d+)\}¬§/g, (match, index) => {
+                            return hashtags[parseInt(index, 10)];
+                        });
+                    }
+                    return processed;
+                };
+                const lines = text.replace(/—/g, '-').split(/\r\n|\n/);
+                const processedLines = lines.map(line => {
+                    if (line.match(/^# (.*$)/)) {
+                        let content = line.substring(2);
+                        return `★ ${toBold(processParagraphInlineStyles(content))} ★`;
+                    }
+                    if (line.match(/^## (.*$)/)) {
+                        let content = line.substring(3);
+                        return `◆ ${toBold(processParagraphInlineStyles(content))} ◆`;
+                    }
+                    if (line.match(/^### (.*$)/)) {
+                        let content = line.substring(4);
+                        return `⟪ ${toBold(processParagraphInlineStyles(content))} ⟫`;
+                    }
+                    if (line.match(/^#### (.*$)/)) {
+                        let content = line.substring(5);
+                        return `⬅ ${toBold(processParagraphInlineStyles(content))} ➡`;
+                    }
+                    if (line.match(/^(#####|######) (.*$)/)) {
+                        let content = line.replace(/^#+\s*/, '');
+                        return `◀ ${toBold(processParagraphInlineStyles(content))} ▶`;
+                    }
+                    if (line.match(/^> (.*$)/)) {
+                        const content = line.substring(2);
+                        return `❝ ${processParagraphInlineStyles(content)} ❞`;
+                    }
+                    if (line.match(/^(---|\*\*\*|___)\s*$/)) {
+                        return '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬';
+                    }
+                    if (line.match(/^\s*[-*+]\s+(.*$)/)) {
+                        const content = line.replace(/^\s*[-*+]\s+/, '');
+                        return `• ${processParagraphInlineStyles(content)}`;
+                    }
+                    if (line.match(/^\s*(\d+)\.\s+(.*$)/)) {
+                        const num = parseInt(line.match(/^\s*(\d+)\./)[1], 10);
+                        const rest = line.replace(/^\s*(\d+)\.\s+/, '');
+                        const circled = ['⓪', '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'];
+                        const content = processParagraphInlineStyles(rest);
+                        return (num >= 0 && num <= 20) ? `${circled[num]} ${content}` : `${num}. ${content}`;
+                    }
+                    return processParagraphInlineStyles(line);
+                });
+                let finalOutput = processedLines.join('\n').replace(/\n{3,}/g, "\n\n").trim();
+                return finalOutput;
+            }
+            function getHashtagSuggestions(text) {
+                const currentHashtags = new Set((text.match(/#[\p{L}\p{N}_]+/gu) || []).map(tag => tag.substring(1).toLowerCase()));
+                if (/[\u0600-\u06FF]/.test(text)) {
+                    const cleanedText = text
+                        .replace(/[#*_~`\->۔،؟\r\n|\n]/g, ' ')
+                        .toLowerCase();
+                    const words = cleanedText.split(/\s+/).filter(w => w.length > 3 && !/^[0-9]/.test(w));
+                    if (words.length === 0) return [];
+                    const frequency = words.reduce((acc, word) => {
+                        acc[word] = (acc[word] || 0) + 1;
+                        return acc;
+                    }, {});
+                    const sortedWords = Object.keys(frequency)
+                        .sort((a, b) => frequency[b] - frequency[a]);
+                    return sortedWords
+                        .filter(word => !currentHashtags.has(word))
+                        .slice(0, 10)
+                        .map(word => `#${word}`);
+                } else {
+                    const doc = nlp(text);
+                    const nouns = doc.nouns().out('array');
+                    const verbs = doc.verbs().out('array');
+                    const adjectives = doc.adjectives().out('array');
+                    const keywords = [...new Set([...nouns, ...verbs, ...adjectives])];
+                    return keywords
+                        .filter(word => word.length > 2 && !currentHashtags.has(word.toLowerCase()))
+                        .map(word => `#${word.replace(/\s+/g, '')}`)
+                        .slice(0, 10);
+                }
+            }
+            window.updateOutput = function () {
+                const text = inputText.value;
+                const formattedText = window.formatText(text);
+                outputPreview.textContent = formattedText;
+                const charCount = text.length;
+                const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+                const hashtagCount = (text.match(/#[\p{L}\p{N}_]+/gu) || []).length;
+                charCountEl.textContent = `Chars: ${charCount}`;
+                wordCountEl.textContent = `Words: ${wordCount}`;
+                hashtagCountEl.textContent = `Hashtags: ${hashtagCount}`;
+                if (charCount > 3000) {
+                    charCountEl.classList.add('text-red-500', 'font-bold');
+                } else if (charCount > 2800) {
+                    charCountEl.classList.add('text-yellow-500', 'font-semibold');
+                    charCountEl.classList.remove('text-red-500', 'font-bold');
+                } else {
+                    charCountEl.classList.remove('text-red-500', 'font-bold', 'text-yellow-500', 'font-semibold');
+                }
+                const readabilityScore = calculateFleschReadingEase(text);
+                readabilityScoreEl.textContent = `Readability: ${readabilityScore} (${getReadabilityDescription(readabilityScore)})`;
+                const linesInPreview = formattedText.split('\n');
+                const firstThreeLinesCharCount = linesInPreview.slice(0, 3).join('\n').length;
+                if (firstThreeLinesCharCount > userSettings.readMoreThreshold || linesInPreview.length > 3) {
+                    readMoreHint.classList.remove('hidden');
+                } else {
+                    readMoreHint.classList.add('hidden');
+                }
+                hashtagSuggestionsContainer.innerHTML = '';
+                const suggestions = getHashtagSuggestions(text);
+                if (suggestions.length > 0) {
+                    suggestions.forEach(tag => {
+                        const btn = document.createElement('button');
+                        btn.className = 'px-3 py-1 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-700 transition';
+                        btn.textContent = tag;
+                        btn.addEventListener('click', () => {
+                            insertTextAtCursor(tag + ' ');
+                            updateOutput();
+                            updateHistory(inputText.value);
+                        });
+                        hashtagSuggestionsContainer.appendChild(btn);
+                    });
+                } else {
+                    hashtagSuggestionsContainer.innerHTML = '<p class="text-xs italic">Start typing to get hashtag suggestions.</p>';
+                }
+            }
+            function insertTextAtCursor(textToInsert) {
+                const start = inputText.selectionStart;
+                const end = inputText.selectionEnd;
+                const value = inputText.value;
+                inputText.value = value.substring(0, start) + textToInsert + value.substring(end);
+                inputText.selectionStart = inputText.selectionEnd = start + textToInsert.length;
+                inputText.focus();
+            }
+            function triggerAutosave() {
+                clearTimeout(autosaveTimeout);
+                autosaveTimeout = setTimeout(() => {
+                    localStorage.setItem('linkedinFormatter_wip', inputText.value);
+                    autosaveStatus.textContent = `Saved. ${new Date().toLocaleTimeString()}`;
+                    if (loadedDraftId) {
+                        const index = drafts.findIndex(d => d.id === loadedDraftId);
+                        if (index !== -1) {
+                            drafts[index].content = inputText.value;
+                            saveDraftsToStorage();
+                            autosaveStatus.textContent = `Draft "${drafts[index].name}" auto-updated. ${new Date().toLocaleTimeString()}`;
+                        }
+                    }
+                    setTimeout(() => autosaveStatus.textContent = '', 2000);
+                }, userSettings.autosaveFrequency * 1000);
+            }
+            function updateHistory(text) {
+                if (text === history[historyIndex]) return;
+                history = history.slice(0, historyIndex + 1);
+                history.push(text);
+                historyIndex++;
+                updateUndoRedoButtons();
+            }
+            function undo() {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    inputText.value = history[historyIndex];
+                    updateOutput();
+                    updateUndoRedoButtons();
+                }
+            }
+            function redo() {
+                if (historyIndex < history.length - 1) {
+                    historyIndex++;
+                    inputText.value = history[historyIndex];
+                    updateOutput();
+                    updateUndoRedoButtons();
+                }
+            }
+            function updateUndoRedoButtons() {
+                undoBtn.disabled = historyIndex <= 0;
+                redoBtn.disabled = historyIndex >= history.length - 1;
+                undoBtn.classList.toggle('opacity-50', undoBtn.disabled);
+                redoBtn.classList.toggle('opacity-50', redoBtn.disabled);
+            }
+            function saveDraftsToStorage() {
+                localStorage.setItem('linkedinFormatterDrafts', JSON.stringify(drafts));
+            }
+            function saveCustomTemplatesToStorage() {
+                localStorage.setItem('linkedinFormatterCustomTemplates', JSON.stringify(customTemplates));
+            }
+            function renderDrafts(filterQuery = '', filterTag = '') {
+                draftsListContainer.innerHTML = '';
+                const filteredDrafts = drafts.filter(draft => {
+                    const matchesSearch = !filterQuery || draft.name.toLowerCase().includes(filterQuery.toLowerCase()) || draft.content.toLowerCase().includes(filterQuery.toLowerCase());
+                    const matchesTag = !filterTag || (draft.category && draft.category.toLowerCase() === filterTag.toLowerCase());
+                    return matchesSearch && matchesTag;
+                });
+                if (filteredDrafts.length === 0) {
+                    draftsListContainer.innerHTML = '<p class="text-gray-500 italic">No matching drafts found.</p>';
+                    return;
+                }
+                const allCategories = [...new Set(drafts.map(d => d.category).filter(Boolean))];
+                draftFilterTag.innerHTML = '<option value="">All Categories</option>' +
+                    allCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+                if (filterTag) {
+                    draftFilterTag.value = filterTag;
+                }
+                filteredDrafts.forEach((draft, index) => {
+                    const draftEl = document.createElement('div');
+                    draftEl.className = 'flex items-center justify-between p-4 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md';
+                    draftEl.innerHTML = `
+                    <div class="flex items-center gap-3 flex-grow">
+                        <input type="checkbox" class="draft-select-checkbox" data-id="${draft.id}">
+                        <div>
+                            <p class="font-semibold">${draft.name}</p>
+                            <p class="text-sm text-gray-500">${new Date(draft.id).toLocaleString()} ${draft.category ? `(<span class="italic">${draft.category}</span>)` : ''} - ${draft.content.substring(0, 40)}...</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn-tool" data-action="load" data-id="${draft.id}" title="Load"><i class="bi bi-box-arrow-in-down"></i></button>
+                        <button class="btn-tool" data-action="rename" data-id="${draft.id}" title="Rename/Categorize"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn-tool text-red-500" data-action="delete" data-id="${draft.id}" title="Delete"><i class="bi bi-trash"></i></button>
+                    </div>
+                `;
+                    draftsListContainer.appendChild(draftEl);
+                });
+            }
+            function renderTemplates() {
+                defaultTemplatesContainer.innerHTML = '';
+                [...defaultTemplates, ...customTemplates].forEach((template, index) => {
+                    const templateEl = document.createElement('a');
+                    templateEl.className = 'export-option';
+                    templateEl.href = '#';
+                    templateEl.textContent = template.name;
+                    templateEl.dataset.templateId = template.id || `default-${index}`;
+                    templateEl.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (template.id) {
+                            editTemplate(template.id);
+                        } else {
+                            if (inputText.value && !confirm('This will replace current text. Continue?')) return;
+                            inputText.value = template.content;
+                            updateOutput();
+                            updateHistory(inputText.value);
+                            alert(`Loaded Template: "${template.name}"`);
+                            templateOptions.classList.add('hidden');
+                        }
+                    });
+                    defaultTemplatesContainer.appendChild(templateEl);
+                });
+            }
+            function editTemplate(templateId) {
+                const template = customTemplates.find(t => t.id === templateId);
+                if (template) {
+                    templateModalTitle.textContent = "Edit Template";
+                    templateNameInput.value = template.name;
+                    templateContentInput.value = template.content;
+                    saveTemplateBtn.textContent = "Update Template";
+                    saveTemplateBtn.dataset.editId = templateId;
+                    deleteTemplateBtn.style.display = 'inline-flex';
+                    deleteTemplateBtn.dataset.deleteId = templateId;
+                    createTemplateModal.classList.remove('hidden');
+                    createTemplateModal.classList.add('flex');
+                }
+            }
+            document.getElementById('backup-btn').addEventListener('click', () => {
+                const data = {
+                    drafts: drafts,
+                    customTemplates: customTemplates,
+                    wip: localStorage.getItem('linkedinFormatter_wip') || '',
+                    settings: userSettings,
+                    replacements: replacements,
+                    theme: localStorage.getItem('theme') || 'light'
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `linkedin-formatter-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                alert("Backup created successfully!");
+            });
+            document.getElementById('restore-btn').addEventListener('click', () => {
+                document.getElementById('restore-file').click();
+            });
+            document.getElementById('restore-file').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.drafts) {
+                            drafts = data.drafts;
+                            saveDraftsToStorage();
+                        }
+                        if (data.customTemplates) {
+                            customTemplates = data.customTemplates;
+                            saveCustomTemplatesToStorage();
+                            renderTemplates();
+                        }
+                        if (data.wip) {
+                            localStorage.setItem('linkedinFormatter_wip', data.wip);
+                            inputText.value = data.wip;
+                            updateOutput();
+                            updateHistory(inputText.value);
+                        }
+                        if (data.settings) {
+                            userSettings = data.settings;
+                            localStorage.setItem('linkedinFormatterSettings', JSON.stringify(userSettings));
+                            applySettings();
+                            if (data.replacements) {
+                                replacements = data.replacements;
+                                saveReplacementsToStorage();
+                                updateOutput();
+                            }
+                            if (data.theme) {
+                                localStorage.setItem('theme', data.theme);
+                                if (data.theme === 'dark') {
+                                    document.documentElement.classList.add('dark');
+                                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                                } else {
+                                    document.documentElement.classList.remove('dark');
+                                    themeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+                                }
+                            }
+                        }
+                        alert("Backup restored successfully!");
+                    } catch (err) {
+                        alert("Invalid backup file.");
+                        console.error("Restore error:", err);
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            });
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    themeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                }
+            });
+            inputText.addEventListener('input', () => {
+                if (isSyncing) return;
+                updateOutput();
+                triggerAutosave();
+                updateHistory(inputText.value);
+                updateButtonState();
+            });
+            document.querySelector('.toolbar').addEventListener('click', e => {
+                const button = e.target.closest('button[data-format]');
+                if (!button) return;
+                const format = button.dataset.format;
+                const start = inputText.selectionStart;
+                const end = inputText.selectionEnd;
+                const selected = inputText.value.substring(start, end);
+                if (!selected) return;
+                let replacement = '';
+                if (format === 'bold') replacement = `**${selected}**`;
+                else if (format === 'italic') replacement = `*${selected}*`;
+                else if (format === 'strikethrough') replacement = `~~${selected}~~`;
+                else if (format === 'bullet') replacement = selected.split('\n').map(l => `* ${l}`).join('\n');
+                else if (format === 'number') replacement = selected.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n');
+                inputText.setRangeText(replacement, start, end, 'end');
+                inputText.focus();
+                updateOutput();
+                updateHistory(inputText.value);
+            });
+            inputText.addEventListener('keydown', e => {
+                if (e.ctrlKey) {
+                    let handled = true;
+                    if (e.key === 'b') applyFormatShortcut('**');
+                    else if (e.key === 'i') applyFormatShortcut('*');
+                    else if (e.key === 'z') { e.preventDefault(); undo(); }
+                    else if (e.key === 'y') { e.preventDefault(); redo(); }
+                    else handled = false;
+                    if (handled) e.preventDefault();
+                }
+            });
+            function applyFormatShortcut(markup) {
+                const start = inputText.selectionStart;
+                const end = inputText.selectionEnd;
+                const selected = inputText.value.substring(start, end);
+                if (!selected) return;
+                inputText.setRangeText(`${markup}${selected}${markup}`, start, end, 'end');
+                updateOutput();
+                updateHistory(inputText.value);
+            }
+            clearBtn.addEventListener('click', () => {
+                inputText.value = '';
+                updateOutput();
+                updateHistory('');
+                loadedDraftId = null;
+                updateDraftBtn.classList.add('hidden');
+                saveDraftBtn.classList.remove('hidden');
+            });
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(outputPreview.textContent).then(() => {
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = `<i class="bi bi-check-circle-fill"></i> Copied!`;
+                    setTimeout(() => copyBtn.innerHTML = originalText, 2000);
+                });
+            });
+            const socialShareContainer = document.getElementById('social-share-container');
+            socialShareContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('.btn-social');
+                if (!button) return;
+
+                const limit = parseInt(button.dataset.limit, 10);
+                const fullText = outputPreview.textContent;
+                const readMoreLink = prompt("Enter a link to add after 'Read More' (optional, press OK if empty):", "");
+
+                let readMoreText = "\n\nRead more...";
+                if (readMoreLink && readMoreLink.trim() !== "") {
+                    readMoreText = `\n\nRead more:\n ${readMoreLink}`;
+                }
+
+                let finalText = fullText;
+                if (fullText.length > limit) {
+                    // Ensure space for the "Read more..." text and link
+                    const truncatedLength = limit - readMoreText.length - 3; // -3 for "..."
+                    if (truncatedLength > 0) {
+                        finalText = fullText.substring(0, truncatedLength) + "..." + readMoreText;
+                    } else {
+                        alert("The content is too long to add a 'Read More' link within the platform's limit.");
+                        return;
+                    }
+                }
+
+                navigator.clipboard.writeText(finalText).then(() => {
+                    const originalIconHTML = button.innerHTML;
+                    button.classList.add('copied');
+                    button.innerHTML = '<i class="bi bi-check-lg"></i>';
+                    setTimeout(() => {
+                        button.classList.remove('copied');
+                        button.innerHTML = originalIconHTML;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            });
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            saveDraftBtn.addEventListener('click', () => {
+                const lines = inputText.value.split(/\r?\n/).map(l => l.trim());
+                let titleLine = lines.find(l => l && !/^بسم الله/.test(l.replace(/[\u064B-\u065F\u0670\u0640]/g, "")));
+                if (!titleLine) titleLine = "Untitled Draft";
+                const date = new Date().toLocaleDateString();
+                const name = `${titleLine} - ${date}`;
+                if (name && inputText.value.trim()) {
+                    const category = "";
+                    const newDraft = { id: Date.now(), name: name, content: inputText.value, category: category || '' };
+                    drafts.unshift(newDraft);
+                    saveDraftsToStorage();
+                    loadedDraftId = newDraft.id;
+                    localStorage.setItem('linkedinFormatterLoadedDraftId', loadedDraftId);
+                    updateButtonState();
+                } else if (!inputText.value.trim()) {
+                    alert("Nothing to save.");
+                }
+            });
+            updateDraftBtn.addEventListener('click', () => {
+                if (!loadedDraftId) {
+                    alert("No draft is currently loaded to update.");
+                    return;
+                }
+                const draftIndex = drafts.findIndex(d => d.id === loadedDraftId);
+                if (draftIndex !== -1) {
+                    const oldName = drafts[draftIndex].name;
+                    drafts[draftIndex].content = inputText.value;
+                    saveDraftsToStorage();
+                    const originalText = updateDraftBtn.innerHTML;
+                    updateDraftBtn.innerHTML = `<i class="bi bi-check-circle-fill"></i> Updated!`;
+                    updateDraftBtn.disabled = true;
+                    setTimeout(() => {
+                        updateDraftBtn.innerHTML = originalText;
+                        updateDraftBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    alert("Error: Could not find the loaded draft to update. Resetting state.");
+                    loadedDraftId = null;
+                    updateDraftBtn.classList.add('hidden');
+                    saveDraftBtn.classList.remove('hidden');
+                }
+            });
+            draftManagerBtn.addEventListener('click', () => {
+                renderDrafts();
+                draftManagerModal.classList.remove('hidden');
+                draftManagerModal.classList.add('flex');
+            });
+            draftsListContainer.addEventListener('click', e => {
+                const button = e.target.closest('button[data-action]');
+                if (!button) return;
+                const id = parseInt(button.dataset.id, 10);
+                const action = button.dataset.action;
+                const draftIndex = drafts.findIndex(d => d.id === id);
+                if (draftIndex === -1) return;
+                if (action === 'load') {
+                    if (inputText.value.trim() && !confirm('This will replace your current text. Continue?')) {
+                        return;
+                    }
+                    inputText.value = drafts[draftIndex].content;
+                    updateOutput();
+                    updateHistory(inputText.value);
+                    loadedDraftId = id;
+                    localStorage.setItem('linkedinFormatterLoadedDraftId', loadedDraftId);
+                    updateButtonState();
+                    draftManagerModal.classList.add('hidden');
+                } else if (action === 'delete') {
+                    if (confirm(`Are you sure you want to delete "${drafts[draftIndex].name}"?`)) {
+                        if (loadedDraftId === id) {
+                            loadedDraftId = null;
+                            localStorage.removeItem('linkedinFormatterLoadedDraftId');
+                            updateButtonState();
+                        }
+                        drafts.splice(draftIndex, 1);
+                        saveDraftsToStorage();
+                        renderDrafts(draftSearch.value, draftFilterTag.value);
+                    }
+                } else if (action === 'rename') {
+                    const oldName = drafts[draftIndex].name;
+                    const newName = prompt('Enter new name:', oldName);
+                    if (newName) {
+                        const newCategory = prompt('Enter new category (optional):', drafts[draftIndex].category || '');
+                        drafts[draftIndex].name = newName;
+                        drafts[draftIndex].category = newCategory || '';
+                        saveDraftsToStorage();
+                        renderDrafts(draftSearch.value, draftFilterTag.value);
+                    }
+                }
+            });
+            draftSearch.addEventListener('input', () => renderDrafts(draftSearch.value, draftFilterTag.value));
+            draftFilterTag.addEventListener('change', () => renderDrafts(draftSearch.value, draftFilterTag.value));
+            selectAllDraftsCheckbox.addEventListener('change', (e) => {
+                document.querySelectorAll('.draft-select-checkbox').forEach(checkbox => {
+                    checkbox.checked = e.target.checked;
+                });
+            });
+            bulkDeleteDraftsBtn.addEventListener('click', () => {
+                const selectedDraftIds = Array.from(document.querySelectorAll('.draft-select-checkbox:checked'))
+                    .map(checkbox => parseInt(checkbox.dataset.id, 10));
+                if (selectedDraftIds.length === 0) {
+                    alert("No drafts selected for deletion.");
+                    return;
+                }
+                if (confirm(`Are you sure you want to delete ${selectedDraftIds.length} selected draft(s)?`)) {
+                    drafts = drafts.filter(draft => !selectedDraftIds.includes(draft.id));
+                    saveDraftsToStorage();
+                    if (selectedDraftIds.includes(loadedDraftId)) {
+                        loadedDraftId = null;
+                        updateDraftBtn.classList.add('hidden');
+                        saveDraftBtn.classList.remove('hidden');
+                    }
+                    renderDrafts(draftSearch.value, draftFilterTag.value);
+                    selectAllDraftsCheckbox.checked = false;
+                    alert(`${selectedDraftIds.length} draft(s) deleted.`);
+                }
+            });
+            templateDropdownBtn.addEventListener('click', () => templateOptions.classList.toggle('hidden'));
+            document.body.addEventListener('click', (e) => {
+                if (!templateDropdownBtn.contains(e.target) && !templateOptions.contains(e.target)) {
+                    templateOptions.classList.add('hidden');
+                }
+            });
+            createTemplateBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                templateModalTitle.textContent = "Create New Template";
+                templateNameInput.value = '';
+                templateContentInput.value = '';
+                saveTemplateBtn.textContent = "Save Template";
+                deleteTemplateBtn.style.display = 'none';
+                deleteTemplateBtn.removeAttribute('data-delete-id');
+                saveTemplateBtn.removeAttribute('data-edit-id');
+                createTemplateModal.classList.remove('hidden');
+                createTemplateModal.classList.add('flex');
+                templateOptions.classList.add('hidden');
+            });
+            saveTemplateBtn.addEventListener('click', () => {
+                const name = templateNameInput.value.trim();
+                const content = templateContentInput.value.trim();
+                if (!name || !content) {
+                    alert("Template name and content cannot be empty.");
+                    return;
+                }
+                const editId = saveTemplateBtn.dataset.editId;
+                if (editId) {
+                    const index = customTemplates.findIndex(t => t.id === editId);
+                    if (index !== -1) {
+                        customTemplates[index].name = name;
+                        customTemplates[index].content = content;
+                        alert(`Template "${name}" updated.`);
+                    }
+                } else {
+                    customTemplates.push({ id: Date.now().toString(), name, content });
+                }
+                saveCustomTemplatesToStorage();
+                renderTemplates();
+                createTemplateModal.classList.add('hidden');
+            });
+            deleteTemplateBtn.addEventListener('click', () => {
+                const deleteId = deleteTemplateBtn.dataset.deleteId;
+                if (deleteId && confirm("Are you sure you want to delete this template?")) {
+                    customTemplates = customTemplates.filter(t => t.id !== deleteId);
+                    saveCustomTemplatesToStorage();
+                    renderTemplates();
+                    createTemplateModal.classList.add('hidden');
+                    alert("Template deleted.");
+                }
+            });
+            importFile.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    inputText.value = e.target.result;
+                    updateOutput();
+                    updateHistory(inputText.value);
+                    loadedDraftId = null;
+                    updateDraftBtn.classList.add('hidden');
+                    saveDraftBtn.classList.remove('hidden');
+                };
+                reader.readAsText(file);
+            });
+            exportDropdownBtn.addEventListener('click', () => exportOptions.classList.toggle('hidden'));
+            document.body.addEventListener('click', (e) => {
+                if (!exportDropdownBtn.contains(e.target) && !exportOptions.contains(e.target)) {
+                    exportOptions.classList.add('hidden');
+                }
+            });
+            const exportFile = (content, fileName, type) => {
+                const blob = new Blob([content], { type });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            };
+            document.getElementById('export-txt-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const lines = inputText.value.split(/\r?\n/).map(l => l.trim());
+                let titleLine = lines.find(l => l && l !== "بِسْمِ ٱللهِ ٱلرَّحْمَٰنِ ٱلرَّحِيْمِ");
+                if (!titleLine) titleLine = "Untitled";
+                const date = new Date().toISOString().slice(0, 10);
+                exportFile(outputPreview.textContent, `${titleLine} - ${date}.txt`, 'text/plain;charset=utf-8');
+            });
+            document.getElementById('export-md-btn').addEventListener('click', (e) => { e.preventDefault(); exportFile(inputText.value, 'linkedin-post.md', 'text/markdown;charset=utf-8'); });
+            document.getElementById('export-selected-txt').addEventListener('click', function () {
+                const selectedCheckboxes = document.querySelectorAll('#drafts-list .draft-select-checkbox:checked');
+                if (selectedCheckboxes.length > 0) {
+                    selectedCheckboxes.forEach(checkbox => {
+                        const draftId = parseInt(checkbox.dataset.id, 10);
+                        const draft = drafts.find(d => d.id === draftId);
+                        if (draft) {
+                            exportFile(formatText(draft.content), `${draft.name}.txt`, 'text/plain;charset=utf-8');
+                            exportFile(draft.content, `${draft.name}.md`, 'text/markdown;charset=utf-8');
+                        }
+                    });
+                } else {
+                    alert('Please select one or more drafts to export.');
+                }
+            });
+            document.getElementById('export-selected-jpg').addEventListener('click', function () {
+                const selectedCheckboxes = document.querySelectorAll('#drafts-list .draft-select-checkbox:checked');
+                if (selectedCheckboxes.length > 0) {
+                    selectedCheckboxes.forEach(checkbox => {
+                        const draftId = parseInt(checkbox.dataset.id, 10);
+                        const draft = drafts.find(d => d.id === draftId);
+                        if (draft) {
+                            const tempPreview = document.createElement('div');
+                            tempPreview.className = outputPreview.className;
+                            tempPreview.style.cssText = `position: absolute; left: -9999px; width: 600px; white-space: pre-wrap; word-wrap: break-word;`;
+                            tempPreview.textContent = formatText(draft.content);
+                            if (/[\u0600-\u06FF]/.test(tempPreview.textContent)) {
+                                tempPreview.style.direction = 'rtl';
+                                tempPreview.style.textAlign = 'right';
+                            }
+                            document.body.appendChild(tempPreview);
+                            html2canvas(tempPreview, { scale: 2, useCORS: true }).then(canvas => {
+                                const link = document.createElement('a');
+                                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                                link.download = `${draft.name}.jpg`;
+                                link.click();
+                                document.body.removeChild(tempPreview);
+                            });
+                        }
+                    });
+                } else {
+                    alert('Please select one or more drafts to export.');
+                }
+            });
+            document.getElementById('export-png-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                const previewElement = document.getElementById('output-preview');
+                const originalDirection = previewElement.style.direction;
+                const originalTextAlign = previewElement.style.textAlign;
+                if (/[\u0600-\u06FF]/.test(previewElement.textContent)) {
+                    previewElement.style.direction = 'rtl';
+                    previewElement.style.textAlign = 'right';
+                }
+                html2canvas(document.getElementById('output-preview'), {
+                    useCORS: true,
+                    scale: 3
+                }).then(canvas => {
+                    const lines = inputText.value.split(/\r?\n/).map(l => l.trim());
+                    let titleLine = lines.find(l => l && l !== "بِسْمِ ٱللهِ ٱلرَّحْمَٰنِ ٱلرَّحِيْمِ");
+                    if (!titleLine) titleLine = "Untitled";
+                    const date = new Date().toISOString().slice(0, 10);
+                    const link = document.createElement('a');
+                    link.download = `${titleLine} - ${date}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    previewElement.style.direction = originalDirection;
+                    previewElement.style.textAlign = originalTextAlign;
+                });
+            });
+            function updateButtonState() {
+                if (loadedDraftId) {
+                    updateDraftBtn.classList.remove('hidden');
+                    saveDraftBtn.classList.add('hidden');
+                } else {
+                    updateDraftBtn.classList.add('hidden');
+                    saveDraftBtn.classList.remove('hidden');
+                }
+            }
+            function generatePdfContent(draftsToExport) {
+                let content = [];
+                draftsToExport.forEach(draft => {
+                    content.push({ text: `Draft Name: ${draft.name}`, style: 'header' });
+                    content.push({ text: `Saved On: ${new Date(draft.id).toLocaleString()}`, style: 'subheader' });
+                    if (draft.category) {
+                        content.push({ text: `Category: ${draft.category}`, style: 'subheader' });
+                    }
+                    content.push({ text: 'Formatted Content:', style: 'subheader' });
+                    content.push({ text: formatText(draft.content) || ' ', margin: [0, 0, 0, 20] });
+                    content.push({ text: '---', alignment: 'center', margin: [0, 0, 0, 20] });
+                });
+                return {
+                    content: content,
+                    defaultStyle: {
+                        font: 'NotoNastaliqUrdu'
+                    },
+                    styles: {
+                        header: { fontSize: 18, bold: false, margin: [0, 10, 0, 5], font: 'Roboto' },
+                        subheader: { fontSize: 12, bold: false, margin: [0, 5, 0, 2], font: 'Roboto' }
+                    }
+                };
+            }
+            exportPdfAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (drafts.length === 0) {
+                    alert("No drafts to export.");
+                    return;
+                }
+                const docDefinition = generatePdfContent(drafts);
+                pdfMake.createPdf(docDefinition).download('all-drafts.pdf');
+            });
+            exportSelectedDraftsBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const selectedDraftIds = Array.from(document.querySelectorAll('.draft-select-checkbox:checked'))
+                    .map(checkbox => parseInt(checkbox.dataset.id, 10));
+                if (selectedDraftIds.length === 0) {
+                    alert("No drafts selected for PDF export.");
+                    return;
+                }
+                const selectedDrafts = drafts.filter(draft => selectedDraftIds.includes(draft.id));
+                const docDefinition = generatePdfContent(selectedDrafts);
+                pdfMake.createPdf(docDefinition).download('selected-drafts.pdf');
+            });
+            document.querySelectorAll('.modal-close-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btn.closest('.fixed').classList.add('hidden');
+                });
+            });
+            emojiPickerBtn.addEventListener('click', () => {
+                emojiPickerModal.classList.remove('hidden');
+                emojiPickerModal.classList.add('flex');
+            });
+            emojiGrid.addEventListener('click', e => {
+                if (e.target.tagName === 'BUTTON') {
+                    const emoji = e.target.textContent;
+                    insertTextAtCursor(emoji);
+                    updateOutput();
+                    updateHistory(inputText.value);
+                    emojiPickerModal.classList.add('hidden');
+                }
+            });
+            settingsBtn.addEventListener('click', () => {
+                autosaveFrequencyInput.value = userSettings.autosaveFrequency;
+                readMoreThresholdInput.value = userSettings.readMoreThreshold;
+                settingsModal.classList.remove('hidden');
+                settingsModal.classList.add('flex');
+            });
+            saveSettingsBtn.addEventListener('click', () => {
+                const newAutosaveFrequency = parseInt(autosaveFrequencyInput.value, 10);
+                const newReadMoreThreshold = parseInt(readMoreThresholdInput.value, 10);
+                if (isNaN(newAutosaveFrequency) || newAutosaveFrequency < 5) {
+                    alert("Autosave frequency must be a number greater than or equal to 5 seconds.");
+                    return;
+                }
+                if (isNaN(newReadMoreThreshold) || newReadMoreThreshold < 50) {
+                    alert("'Read More' threshold must be a number greater than or equal to 50 characters.");
+                    return;
+                }
+                userSettings.autosaveFrequency = newAutosaveFrequency;
+                userSettings.readMoreThreshold = newReadMoreThreshold;
+                localStorage.setItem('linkedinFormatterSettings', JSON.stringify(userSettings));
+                applySettings();
+                settingsModal.classList.add('hidden');
+                alert("Settings saved!");
+            });
+            function applySettings() {
+                clearTimeout(autosaveTimeout);
+                triggerAutosave();
+                updateOutput();
+            }
+            function initialize() {
+                const outputPreview = document.getElementById('output-preview');
+                outputPreview.addEventListener('click', () => {
+                    outputPreview.setAttribute('contenteditable', 'true');
+                    outputPreview.focus();
+                });
+                outputPreview.addEventListener('blur', () => {
+                    outputPreview.setAttribute('contenteditable', 'false');
+                });
+                if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                } else {
+                    themeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+                }
+                const wip = localStorage.getItem('linkedinFormatter_wip');
+                if (wip) {
+                    inputText.value = wip;
+                }
+                const savedDraftId = parseInt(localStorage.getItem('linkedinFormatterLoadedDraftId'), 10);
+                if (savedDraftId && drafts.some(d => d.id === savedDraftId)) {
+                    const correspondingDraft = drafts.find(d => d.id === savedDraftId);
+                    if (correspondingDraft && correspondingDraft.content === wip) {
+                        loadedDraftId = savedDraftId;
+                    } else {
+                        localStorage.removeItem('linkedinFormatterLoadedDraftId');
+                    }
+                }
+                emojis.forEach(emoji => {
+                    const btn = document.createElement('button');
+                    btn.className = 'text-2xl p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition';
+                    btn.textContent = emoji;
+                    emojiGrid.appendChild(btn);
+                });
+                if (drafts.length === 0) {
+                }
+                updateOutput();
+                updateHistory(inputText.value);
+                updateUndoRedoButtons();
+                renderTemplates();
+                updateButtonState();
+                pdfMake.fonts = {
+                    Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' },
+                    NotoNastaliqUrdu: { normal: 'NotoNastaliqUrdu-Regular.ttf', bold: 'NotoNastaliqUrdu-Regular.ttf', italics: 'NotoNastaliqUrdu-Regular.ttf', bolditalics: 'NotoNastaliqUrdu-Regular.ttf' }
+                };
+                applySettings();
+            }
+            function saveReplacementsToStorage() {
+                localStorage.setItem('linkedinFormatterReplacements', JSON.stringify(replacements));
+            }
+            function renderReplacements() {
+                replacementsListContainer.innerHTML = '';
+                if (replacements.length === 0) {
+                    replacementsListContainer.innerHTML = '<p class="text-gray-500 italic">No rules defined. Add one below.</p>';
+                    return;
+                }
+                replacements.forEach(rule => {
+                    const ruleEl = document.createElement('div');
+                    ruleEl.className = 'flex items-center justify-between p-3 border-b dark:border-gray-700 last:border-b-0';
+                    ruleEl.innerHTML = `
+            <div class="flex items-center gap-4">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" class="sr-only peer replacement-toggle" data-id="${rule.id}" ${rule.enabled ? 'checked' : ''}>
+                  <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <div>
+                    <p class="font-mono text-sm">Find: <span class="bg-gray-200 dark:bg-gray-600 px-1 rounded">${rule.find}</span></p>
+                    <p class="font-mono text-sm mt-1">Replace: <span class="bg-gray-200 dark:bg-gray-600 px-1 rounded">${rule.replace}</span></p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button class="btn-tool" data-action="edit" data-id="${rule.id}" title="Edit"><i class="bi bi-pencil-square"></i></button>
+                <button class="btn-tool text-red-500" data-action="delete" data-id="${rule.id}" title="Delete"><i class="bi bi-trash"></i></button>
+            </div>
+        `;
+                    replacementsListContainer.appendChild(ruleEl);
+                });
+            }
+            function resetReplacementForm() {
+                replacementForm.reset();
+                replacementIdInput.value = '';
+                replacementFormTitle.textContent = 'Add New Replacement';
+                cancelEditBtn.style.display = 'none';
+            }
+            replacementsBtn.addEventListener('click', () => {
+                renderReplacements();
+                replacementsModal.classList.remove('hidden');
+                replacementsModal.classList.add('flex');
+            });
+            replacementForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const find = findRegexInput.value.trim();
+                const replace = replaceWithInput.value;
+                const id = replacementIdInput.value;
+                if (!find) return;
+                if (id) {
+                    const index = replacements.findIndex(r => r.id == id);
+                    if (index !== -1) replacements[index] = { ...replacements[index], find, replace };
+                } else {
+                    replacements.push({ id: Date.now(), find, replace, enabled: true });
+                }
+                saveReplacementsToStorage();
+                renderReplacements();
+                updateOutput();
+                resetReplacementForm();
+            });
+            replacementsListContainer.addEventListener('click', e => {
+                const target = e.target;
+                const ruleId = target.closest('[data-id]')?.dataset.id;
+                if (!ruleId) return;
+                if (target.closest('.replacement-toggle')) {
+                    const index = replacements.findIndex(r => r.id == ruleId);
+                    if (index !== -1) {
+                        replacements[index].enabled = target.closest('.replacement-toggle').checked;
+                        saveReplacementsToStorage();
+                        updateOutput();
+                    }
+                } else if (target.closest('[data-action="delete"]')) {
+                    if (confirm('Delete this rule?')) {
+                        replacements = replacements.filter(r => r.id != ruleId);
+                        saveReplacementsToStorage();
+                        renderReplacements();
+                        updateOutput();
+                    }
+                } else if (target.closest('[data-action="edit"]')) {
+                    const rule = replacements.find(r => r.id == ruleId);
+                    if (rule) {
+                        replacementIdInput.value = rule.id;
+                        findRegexInput.value = rule.find;
+                        replaceWithInput.value = rule.replace;
+                        replacementFormTitle.textContent = 'Edit Replacement';
+                        cancelEditBtn.style.display = 'inline-flex';
+                        findRegexInput.focus();
+                    }
+                }
+            });
+            document.addEventListener('keydown', e => {
+                const key = e.key.toLowerCase();
+                let handled = true;
+
+                if (e.ctrlKey && key === 's') {
+                    if (!saveDraftBtn.classList.contains('hidden')) {
+                        saveDraftBtn.click();
+                    } else {
+                        updateDraftBtn.click();
+                    }
+                } else if (e.ctrlKey && key === ',') {
+                    settingsBtn.click();
+                } else if (e.shiftKey && key === 'c') {
+                    copyBtn.click();
+                } else if (e.shiftKey && key === 'x') {
+                    clearBtn.click();
+                } else if (e.shiftKey && key === 'd') {
+                    draftManagerBtn.click();
+                } else if (e.shiftKey && key === 'r') {
+                    replacementsBtn.click();
+                } else if (e.shiftKey && key === 'l') {
+                    shareLinkedInBtn.click();
+                } else {
+                    handled = false;
+                }
+
+                if (handled) {
+                    e.preventDefault();
+                }
+            });
+            cancelEditBtn.addEventListener('click', resetReplacementForm);
+            const backupReplacementsBtn = document.getElementById('backup-replacements-btn');
+            const restoreReplacementsBtn = document.getElementById('restore-replacements-btn');
+            const restoreReplacementsFile = document.getElementById('restore-replacements-file');
+            backupReplacementsBtn.addEventListener('click', () => {
+                if (replacements.length === 0) {
+                    alert("There are no replacement rules to back up.");
+                    return;
+                }
+                const dataStr = JSON.stringify(replacements, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `linkedin-formatter-replacements-${new Date().toISOString().slice(0, 10)}.json`;
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            });
+            restoreReplacementsBtn.addEventListener('click', () => {
+                restoreReplacementsFile.click();
+            });
+            restoreReplacementsFile.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedRules = JSON.parse(e.target.result);
+                        if (!Array.isArray(importedRules)) {
+                            throw new Error("Invalid format: Backup must be a JSON array.");
+                        }
+                        if (confirm("This will overwrite all current replacement rules. Continue?")) {
+                            replacements = importedRules;
+                            saveReplacementsToStorage();
+                            renderReplacements();
+                            updateOutput();
+                            alert("Rules restored successfully!");
+                        }
+                    } catch (err) {
+                        alert(`Error restoring rules: ${err.message}`);
+                    } finally {
+                        event.target.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            });
+            outputPreview.addEventListener('input', () => {
+                if (isSyncing) return;
+                isSyncing = true;
+                let rawText = outputPreview.innerText;
+                rawText = rawText.replace(/^★ (.*?) ★$/gm, '# $1');
+                rawText = rawText.replace(/^◆ (.*?) ◆$/gm, '## $1');
+                rawText = rawText.replace(/^• (.*)$/gm, '* $1');
+                const cursorPosition = inputText.selectionStart;
+                inputText.value = rawText;
+                inputText.setSelectionRange(cursorPosition, cursorPosition);
+                isSyncing = false;
+            });
+            initialize();
+        });
+        (() => {
+            window.addEventListener('load', () => {
+                const featureStyles = `
+            .symbol-mode-active {
+                background-color: #bee3f8; 
+            }
+            html.dark .symbol-mode-active {
+                background-color: #2b6cb0; 
+            }
+        `;
+                const symbolToggleButtonHTML = `
+            <button
+                class="text-2xl p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                id="symbol-mode-btn" title="Toggle Flower Mode">
+                <i class="bi bi-flower1"></i>
+            </button>`;
+                const symbolCrudButtonHTML = `
+            <button
+                class="text-2xl p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                id="symbol-crud-btn" title="Manage Symbols">
+                <i class="bi bi-palette-fill"></i>
+            </button>`;
+                const symbolCrudModalHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 px-4" id="symbol-crud-modal">
+                <div class="bg-white dark:bg-gray-800 shadow-2xl w-full max-w-lg h-full flex flex-col">
+                    <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
+                        <div class="flex items-center gap-4">
+    <h3 class="text-2xl font-semibold">Flower Mode Symbols</h3>
+    <button class="btn-tool" id="backup-symbols-btn" title="Backup Symbols"><i class="bi bi-cloud-download"></i></button>
+    <button class="btn-tool" id="restore-symbols-btn" title="Restore Symbols"><i class="bi bi-cloud-upload"></i></button>
+    <input accept=".json" class="hidden" id="restore-symbols-file" type="file" />
+</div>
+<button class="modal-close-btn">×</button>
+                    </div>
+                    <div class="p-6 overflow-y-auto flex-grow" id="symbol-map-list"></div>
+                    <div class="p-6 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                        <h4 class="text-lg font-semibold mb-3" id="symbol-form-title">Add New Symbol-Flower Pair</h4>
+                        <form class="space-y-4" id="symbol-map-form">
+                            <input id="symbol-map-id" type="hidden" />
+                            <div>
+                                <label class="block text-sm font-medium mb-1" for="symbol-char">Symbol:</label>
+                                <input class="w-full p-2 font-mono rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600" id="symbol-char" placeholder="e.g., #" type="text" maxlength="2" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1" for="flower-emoji">Replacement:</label>
+                                <input class="w-full p-2 font-mono rounded-lg bg-gray-100 dark:bg-gray-700 border dark:border-gray-600" id="flower-emoji" placeholder="e.g., 🌸" type="text" />
+                            </div>
+                            <div class="flex justify-end gap-3">
+                                <button class="btn btn-secondary" id="cancel-symbol-edit-btn" style="display:none;" type="button">Cancel</button>
+                                <button class="btn btn-primary" type="submit">Save Symbol</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>`;
+                const styleSheet = document.createElement("style");
+                styleSheet.innerText = featureStyles;
+                document.head.appendChild(styleSheet);
+                const replacementsBtn = document.getElementById('replacements-btn');
+                const themeToggleBtn = document.getElementById('theme-toggle');
+                const replacementsModal = document.getElementById('replacements-modal');
+                if (replacementsBtn) {
+                    replacementsBtn.insertAdjacentHTML('afterend', symbolCrudButtonHTML);
+                }
+                if (themeToggleBtn) {
+                    themeToggleBtn.insertAdjacentHTML('beforebegin', symbolToggleButtonHTML);
+                }
+                if (replacementsModal) {
+                    replacementsModal.insertAdjacentHTML('afterend', symbolCrudModalHTML);
+                }
+                const symbolModeBtn = document.getElementById('symbol-mode-btn');
+                const symbolCrudBtn = document.getElementById('symbol-crud-btn');
+                const symbolCrudModal = document.getElementById('symbol-crud-modal');
+                const symbolMapList = document.getElementById('symbol-map-list');
+                const symbolMapForm = document.getElementById('symbol-map-form');
+                const symbolMapIdInput = document.getElementById('symbol-map-id');
+                const symbolCharInput = document.getElementById('symbol-char');
+                const flowerEmojiInput = document.getElementById('flower-emoji');
+                const symbolFormTitle = document.getElementById('symbol-form-title');
+                const cancelSymbolEditBtn = document.getElementById('cancel-symbol-edit-btn');
+                const closeBtn = symbolCrudModal.querySelector('.modal-close-btn');
+                let isSymbolModeActive = JSON.parse(localStorage.getItem('linkedinFormatterSymbolMode')) || false;
+                let loadedMappings = JSON.parse(localStorage.getItem('linkedinFormatterSymbolMappings')) || [
+                    { id: 1, symbol: '◆', flower: '🌸', enabled: true },
+                    { id: 2, symbol: '⟪', flower: '🌻', enabled: true },
+                    { id: 3, symbol: '•', flower: '🌹', enabled: true },
+                    { id: 4, symbol: '⟫', flower: '🌻', enabled: true },
+                ];
+                let symbolMappings = loadedMappings.map(m => ({ ...m, enabled: m.enabled !== false }));
+                function saveSymbolMappingsToStorage() {
+                    localStorage.setItem('linkedinFormatterSymbolMappings', JSON.stringify(symbolMappings));
+                }
+                function renderSymbolMappings() {
+                    symbolMapList.innerHTML = '';
+                    if (symbolMappings.length === 0) {
+                        symbolMapList.innerHTML = '<p class="text-gray-500 italic">No symbols defined.</p>';
+                        return;
+                    }
+                    symbolMappings.forEach(map => {
+                        const el = document.createElement('div');
+                        el.className = 'flex items-center justify-between p-3 border-b dark:border-gray-700 last:border-b-0';
+                        el.innerHTML = `
+    <div class="flex items-center gap-4">
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" class="sr-only peer symbol-toggle" data-id="${map.id}" ${map.enabled ? 'checked' : ''}>
+          <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+        </label>
+        <div>
+            <span class="font-mono text-xl bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">${map.symbol}</span>
+            <i class="bi bi-arrow-right mx-4"></i>
+            <span class="font-mono text-xl">${map.flower}</span>
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn-tool" data-action="edit" data-id="${map.id}" title="Edit"><i class="bi bi-pencil-square"></i></button>
+        <button class="btn-tool text-red-500" data-action="delete" data-id="${map.id}" title="Delete"><i class="bi bi-trash"></i></button>
+    </div>
+`;
+                        symbolMapList.appendChild(el);
+                    });
+                }
+                function resetSymbolMappingForm() {
+                    symbolMapForm.reset();
+                    symbolMapIdInput.value = '';
+                    symbolFormTitle.textContent = 'Add New Symbol-Flower Pair';
+                    cancelSymbolEditBtn.style.display = 'none';
+                }
+                function updateToggleButtonState() {
+                    symbolModeBtn.classList.toggle('symbol-mode-active', isSymbolModeActive);
+                }
+                if (window.formatText) {
+                    const originalFormatText = window.formatText;
+                    window.formatText = function (text) {
+                        let finalOutput = originalFormatText(text);
+                        if (isSymbolModeActive) {
+                            const activeMappings = symbolMappings.filter(m => m.enabled);
+                            if (activeMappings.length > 0) {
+                                const symbolMap = activeMappings.reduce((acc, item) => {
+                                    acc[item.symbol] = item.flower;
+                                    return acc;
+                                }, {});
+                                const escapedSymbols = Object.keys(symbolMap).map(s => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+                                const findRegex = new RegExp(escapedSymbols.join('|'), 'g');
+                                if (findRegex.source !== '(?:)') {
+                                    finalOutput = finalOutput.replace(findRegex, (match) => symbolMap[match] || match);
+                                }
+                            }
+                        }
+                        replacements.filter(r => r.enabled).forEach(rule => {
+                            try {
+                                const regex = new RegExp(rule.find, 'g');
+                                const processedReplace = rule.replace.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+                                finalOutput = finalOutput.replace(regex, processedReplace);
+                            } catch (e) {
+                                console.error(`Invalid regex in replacement rule:`, rule.find);
+                            }
+                        });
+                        return finalOutput;
+                    };
+                }
+                symbolModeBtn.addEventListener('click', () => {
+                    isSymbolModeActive = !isSymbolModeActive;
+                    localStorage.setItem('linkedinFormatterSymbolMode', isSymbolModeActive);
+                    updateToggleButtonState();
+                    if (window.updateOutput) window.updateOutput();
+                });
+                symbolCrudBtn.addEventListener('click', () => {
+                    renderSymbolMappings();
+                    symbolCrudModal.classList.remove('hidden');
+                    symbolCrudModal.classList.add('flex');
+                });
+                closeBtn.addEventListener('click', () => {
+                    symbolCrudModal.classList.add('hidden');
+                    symbolCrudModal.classList.remove('flex');
+                });
+                symbolMapList.addEventListener('click', (e) => {
+                    const toggle = e.target.closest('.symbol-toggle');
+                    if (toggle) {
+                        const id = parseInt(toggle.dataset.id);
+                        const index = symbolMappings.findIndex(m => m.id === id);
+                        if (index !== -1) {
+                            symbolMappings[index].enabled = toggle.checked;
+                            saveSymbolMappingsToStorage();
+                            if (window.updateOutput) window.updateOutput();
+                        }
+                        return;
+                    }
+                });
+
+                const backupSymbolsBtn = document.getElementById('backup-symbols-btn');
+                const restoreSymbolsBtn = document.getElementById('restore-symbols-btn');
+                const restoreSymbolsFile = document.getElementById('restore-symbols-file');
+
+                backupSymbolsBtn.addEventListener('click', () => {
+                    if (symbolMappings.length === 0) {
+                        alert("No symbols to back up.");
+                        return;
+                    }
+                    const blob = new Blob([JSON.stringify(symbolMappings, null, 2)], { type: 'application/json' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `linkedin-formatter-symbols-${new Date().toISOString().slice(0, 10)}.json`;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                });
+
+                restoreSymbolsBtn.addEventListener('click', () => {
+                    restoreSymbolsFile.click();
+                });
+
+                restoreSymbolsFile.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const imported = JSON.parse(e.target.result);
+                            if (!Array.isArray(imported)) throw new Error("Invalid format.");
+                            if (confirm("This will overwrite current symbols. Continue?")) {
+                                symbolMappings = imported.map(m => ({ ...m, enabled: m.enabled !== false }));
+                                saveSymbolMappingsToStorage();
+                                renderSymbolMappings();
+                                if (window.updateOutput) window.updateOutput();
+                                alert("Symbols restored!");
+                            }
+                        } catch (err) {
+                            alert(`Error restoring symbols: ${err.message}`);
+                        } finally {
+                            event.target.value = '';
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+                symbolMapForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const symbol = symbolCharInput.value;
+                    const flower = flowerEmojiInput.value;
+                    const id = symbolMapIdInput.value;
+                    if (!symbol || !flower) return;
+                    if (id) {
+                        const index = symbolMappings.findIndex(m => m.id == id);
+                        if (index !== -1) symbolMappings[index] = { ...symbolMappings[index], symbol, flower };
+                    } else {
+                        symbolMappings.push({ id: Date.now(), symbol, flower, enabled: true });
+                    }
+                    saveSymbolMappingsToStorage();
+                    renderSymbolMappings();
+                    if (window.updateOutput) window.updateOutput();
+                    resetSymbolMappingForm();
+                });
+                symbolMapList.addEventListener('click', (e) => {
+                    const button = e.target.closest('button[data-action]');
+                    if (!button) return;
+
+                    const id = parseInt(button.dataset.id);
+                    const action = button.dataset.action;
+
+                    if (action === 'delete') {
+                        symbolMappings = symbolMappings.filter(m => m.id !== id);
+                    } else if (action === 'edit') {
+                        const map = symbolMappings.find(m => m.id === id);
+                        if (map) {
+                            symbolMapIdInput.value = map.id;
+                            symbolCharInput.value = map.symbol;
+                            flowerEmojiInput.value = map.flower;
+                            symbolFormTitle.textContent = 'Edit Symbol-Flower Pair';
+                            cancelSymbolEditBtn.style.display = 'inline-flex';
+                        }
+                        return;
+                    }
+
+                    saveSymbolMappingsToStorage();
+                    renderSymbolMappings();
+                    if (window.updateOutput) window.updateOutput();
+                });
+                cancelSymbolEditBtn.addEventListener('click', resetSymbolMappingForm);
+                updateToggleButtonState();
+                if (window.updateOutput) window.updateOutput();
+            });
+        })();
+    </script>
+
+    <script type="module">
+        import { Workbox } from 'https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-window.prod.mjs';
+
+        const swUrl = './sw.js';
+        const wb = new Workbox(swUrl);
+
+        wb.addEventListener('waiting', () => {
+            console.log('A new service worker is waiting to activate.');
+            wb.messageSW({ type: 'SKIP_WAITING' });
+        });
+
+        wb.addEventListener('controlling', () => {
+            console.log('The new service worker is now in control. Reloading page for updates...');
+            window.location.reload();
+        });
+
+        wb.register();
+    </script>
+</body>
+
+</html>
